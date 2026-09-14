@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import { pingCommand } from "./commands/ping.js";
+import { commands } from "./commands/index.js";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -12,9 +12,9 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-const commands = new Map([
-    [pingCommand.data.name, pingCommand]
-]);
+const commandMap = new Map(
+    commands.map((cmd) => [cmd.data.name, cmd])
+);
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`${readyClient.user.tag} としてログインしました。`);
@@ -23,7 +23,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) {
         return;
     }
-    const command = commands.get(interaction.commandName);
+    const command = commandMap.get(interaction.commandName);
 
     if (!command) {
         console.error(`コマンド ${interaction.commandName} が見つかりません。`);

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { REST, Routes } from "discord.js";
-import { pingCommand } from "./commands/ping.js";
+import { commands } from "./commands/index.js";
 
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.DISCORD_CLIENT_ID;
@@ -13,7 +13,7 @@ if (!token || !clientId || !guildId) {
 const rest = new REST({ version: "10"}).setToken(token);
 
 await rest.put(Routes.applicationGuildCommands(clientId, guildId),{
-    body: [pingCommand.data.toJSON()],
+    body: commands.map((cmd) => cmd.data.toJSON()),
 });
 
 console.log("コマンドが正常に登録されました。");
