@@ -3,5 +3,6 @@ import { joinCommand } from "./join.js";
 import { pingCommand } from "./ping.js";
 import { participantsCommand } from "./participants.js";
 import { leaveCommand } from "./leave.js";
+import { resetCommand } from "./reset.js";
 
-export const commands = [joinCommand, pingCommand, participantsCommand, leaveCommand];
+export const commands = [joinCommand, pingCommand, participantsCommand, leaveCommand, resetCommand];
