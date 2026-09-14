@@ -1,69 +1,136 @@
+import { database } from "./database.js";
+
 export type Participant = {
-    id: string;
-    displayName: string;
+  id: string;
+  displayName: string;
 };
 
-let registrationOpen = true;
-
-export function isRegistrationOpen(): boolean {
-    return registrationOpen;
+function ensureMatch(guildId: string): void {
+  database
+    .prepare(
+      `
+        INSERT OR IGNORE INTO matches (guild_id, status)
+        VALUES (?, 'open')
+      `,
+    )
+    .run(guildId);
 }
 
-export function setRegistrationOpen(open: boolean): void {
-    registrationOpen = open;
+export function isRegistrationOpen(guildId: string): boolean {
+  ensureMatch(guildId);
+
+  const match = database
+    .prepare<[string], { status: "open" | "closed" }>(
+      "SELECT status FROM matches WHERE guild_id = ?",
+    )
+    .get(guildId);
+
+  return match?.status === "open";
 }
 
-const participants = new Map<string, Participant>();
+export function setRegistrationOpen(
+  guildId: string,
+  isOpen: boolean,
+): void {
+  ensureMatch(guildId);
 
-/**
- * 参加者を追加する
- * @param participant 
- * @returns 
- */
-export function joinMatch(participant: Participant): boolean {
-    if (participants.has(participant.id)) {
-        return false;
-    }
-    participants.set(participant.id, participant);
-    return true;
+  database
+    .prepare(
+      `
+        UPDATE matches
+        SET status = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE guild_id = ?
+      `,
+    )
+    .run(isOpen ? "open" : "closed", guildId);
 }
 
-/**
- * 参加者数取得
- * @returns 
- */
-export function getParticipantCount(): number {
-    return participants.size;
+export function joinMatch(
+  guildId: string,
+  participant: Participant,
+): boolean {
+  ensureMatch(guildId);
+
+  const result = database
+    .prepare(
+      `
+        INSERT OR IGNORE INTO participants
+          (guild_id, user_id, display_name)
+        VALUES (?, ?, ?)
+      `,
+    )
+    .run(guildId, participant.id, participant.displayName);
+
+  return result.changes > 0;
 }
 
-/**
- * 参加者一覧取得
- * @returns 
- */
-export function getParticipants(): Participant[] { 
-    return [...participants.values()];
+export function leaveMatch(
+  guildId: string,
+  userId: string,
+): Participant | null {
+  const participant = database
+    .prepare<[string, string], { id: string; displayName: string }>(
+      `
+        SELECT
+          user_id AS id,
+          display_name AS displayName
+        FROM participants
+        WHERE guild_id = ? AND user_id = ?
+      `,
+    )
+    .get(guildId, userId);
+
+  if (!participant) {
+    return null;
+  }
+
+  database
+    .prepare(
+      `
+        DELETE FROM participants
+        WHERE guild_id = ? AND user_id = ?
+      `,
+    )
+    .run(guildId, userId);
+
+  return participant;
 }
 
-/**
- * 参加取り消し
- * @param userId 
- * @returns 
- */
-export function leaveMatch(userId: string) : Participant | null {
-    const participant = participants.get(userId);
-    if (!participant) {
-        return null;
-    }
-    participants.delete(userId);
-    return participant;
+export function getParticipants(guildId: string): Participant[] {
+  return database
+    .prepare<[string], Participant>(
+      `
+        SELECT
+          user_id AS id,
+          display_name AS displayName
+        FROM participants
+        WHERE guild_id = ?
+        ORDER BY joined_at ASC
+      `,
+    )
+    .all(guildId);
 }
 
-/**
- * 参加者を全員削除する
- * @returns 
- */
-export function clearMatch(): number {
-    const count = participants.size;
-    participants.clear();
-    return count;
+export function getParticipantCount(guildId: string): number {
+  const result = database
+    .prepare<[string], { count: number }>(
+      `
+        SELECT COUNT(*) AS count
+        FROM participants
+        WHERE guild_id = ?
+      `,
+    )
+    .get(guildId);
+
+  return result?.count ?? 0;
+}
+
+export function clearMatch(guildId: string): number {
+  const result = database
+    .prepare(
+      "DELETE FROM participants WHERE guild_id = ?",
+    )
+    .run(guildId);
+
+  return result.changes;
 }

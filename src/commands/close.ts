@@ -12,6 +12,16 @@ export const closeCommand = {
     .setDescription("参加受付を締め切ります"),
 
   async execute(interaction: ChatInputCommandInteraction) {
+    const guildId = interaction.guildId;
+
+    if (!guildId) {
+      await interaction.reply({
+        content: "このコマンドはDiscordサーバー内でのみ使用できます。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const canManage = interaction.memberPermissions?.has(
       PermissionFlagsBits.ManageGuild,
     );
@@ -24,7 +34,7 @@ export const closeCommand = {
       return;
     }
 
-    if (!isRegistrationOpen()) {
+    if (!isRegistrationOpen(guildId)) {
       await interaction.reply({
         content: "参加受付はすでに締め切られています。",
         flags: MessageFlags.Ephemeral,
@@ -32,7 +42,7 @@ export const closeCommand = {
       return;
     }
 
-    setRegistrationOpen(false);
+    setRegistrationOpen(guildId, false);
     await interaction.reply("参加受付を締め切りました。");
   },
 };

@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { commands } from "./commands/index.js";
+import "./database.js";
 
 const token = process.env.DISCORD_TOKEN;
 

@@ -1,5 +1,6 @@
 import { 
     ChatInputCommandInteraction,
+    MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
 import {
@@ -14,8 +15,17 @@ export const participantsCommand = {
         .setDescription("現在の参加者を表示します"),
 
     async execute(interaction: ChatInputCommandInteraction) { 
-        const status = isRegistrationOpen() ? "受付中" : "締切";
-        const participants = getParticipants();
+        const guildId = interaction.guildId;
+
+        if (!guildId) {
+            await interaction.reply({
+                content: "このコマンドはDiscordサーバー内でのみ使用できます。",
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
+        const status = isRegistrationOpen(guildId) ? "受付中" : "締切";
+        const participants = getParticipants(guildId);
         if (participants.length === 0) {
             await interaction.reply(
                 `参加受付: **${status}**\n現在、参加者はいません。`,

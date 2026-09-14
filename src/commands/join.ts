@@ -10,7 +10,16 @@ export const joinCommand = {
         .setName("join")
         .setDescription("カスタムマッチに参加します"),
     async execute(interaction: ChatInputCommandInteraction) {
-        if (!isRegistrationOpen()) {
+        const guildId = interaction.guildId;
+
+        if (!guildId) {
+            await interaction.reply({
+                content: "このコマンドはDiscordサーバー内でのみ使用できます。",
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
+        if (!isRegistrationOpen(guildId)) {
             await interaction.reply({ content: "現在、参加登録は受け付けていません。", flags: MessageFlags.Ephemeral });
             return;
         }
@@ -22,7 +31,7 @@ export const joinCommand = {
             ? member.displayName
             : member?.nick ?? interaction.user.globalName ?? interaction.user.username;
 
-        const joined = joinMatch( { id: interaction.user.id, displayName});
+        const joined = joinMatch(guildId, { id: interaction.user.id, displayName});
 
         if (!joined) {
             await interaction.reply( { content: "すでに参加しています",  flags: MessageFlags.Ephemeral });
@@ -30,7 +39,7 @@ export const joinCommand = {
         }
 
         await interaction.reply(
-            `${displayName} さんが参加しました！ 現在 ${getParticipantCount()} 人です。`,
+            `${displayName} さんが参加しました！ 現在 ${getParticipantCount(guildId)} 人です。`,
         );
     }
 };

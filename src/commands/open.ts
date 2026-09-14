@@ -12,6 +12,15 @@ export const openCommand = {
     .setDescription("参加受付を開始します"),
 
   async execute(interaction: ChatInputCommandInteraction) {
+    const guildId = interaction.guildId;
+
+    if (!guildId) {
+        await interaction.reply({
+          content: "このコマンドはDiscordサーバー内でのみ使用できます。",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+    }
     const canManage = interaction.memberPermissions?.has(
       PermissionFlagsBits.ManageGuild,
     );
@@ -24,7 +33,7 @@ export const openCommand = {
       return;
     }
 
-    if (isRegistrationOpen()) {
+    if (isRegistrationOpen(guildId)) {
       await interaction.reply({
         content: "参加受付はすでに開始されています。",
         flags: MessageFlags.Ephemeral,
@@ -32,7 +41,7 @@ export const openCommand = {
       return;
     }
 
-    setRegistrationOpen(true);
+    setRegistrationOpen(guildId, true);
     await interaction.reply("参加受付を開始しました。");
   },
 };
