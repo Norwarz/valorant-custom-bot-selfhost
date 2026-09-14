@@ -3,6 +3,16 @@ export type Participant = {
     displayName: string;
 };
 
+let registrationOpen = true;
+
+export function isRegistrationOpen(): boolean {
+    return registrationOpen;
+}
+
+export function setRegistrationOpen(open: boolean): void {
+    registrationOpen = open;
+}
+
 const participants = new Map<string, Participant>();
 
 /**
