@@ -16,3 +16,7 @@ export function joinMatch(participant: Participant): boolean {
 export function getParticipantCount(): number {
     return participants.size;
 }
+
+export function getParticipants(): Participant[] { 
+    return [...participants.values()];
+}

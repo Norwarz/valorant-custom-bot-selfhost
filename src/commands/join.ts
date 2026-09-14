@@ -10,7 +10,14 @@ export const joinCommand = {
         .setName("join")
         .setDescription("カスタムマッチに参加します"),
     async execute(interaction: ChatInputCommandInteraction) {
-        const displayName = interaction.user.globalName ?? interaction.user.username;
+        const member = interaction.member;
+
+        // サーバーのメンバー情報が取得できる場合は displayName を使用し、取得できない場合はユーザー名を使用する
+        const displayName =
+        member && "displayName" in member
+            ? member.displayName
+            : member?.nick ?? interaction.user.globalName ?? interaction.user.username;
+
         const joined = joinMatch( { id: interaction.user.id, displayName});
 
         if (!joined) {
