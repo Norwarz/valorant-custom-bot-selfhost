@@ -20,3 +20,12 @@ export function getParticipantCount(): number {
 export function getParticipants(): Participant[] { 
     return [...participants.values()];
 }
+
+export function leaveMatch(userId: string) : Participant | null {
+    const participant = participants.get(userId);
+    if (!participant) {
+        return null;
+    }
+    participants.delete(userId);
+    return participant;
+}
