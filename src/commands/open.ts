@@ -1,7 +1,6 @@
 import {
   ChatInputCommandInteraction,
   MessageFlags,
-  PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
 import { isRegistrationOpen, setRegistrationOpen } from "../match-state.js";
@@ -17,17 +16,6 @@ export const openCommand = {
     if (!guildId) {
       await interaction.reply({
         content: "このコマンドはDiscordサーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
-      return;
-    }
-    const canManage = interaction.memberPermissions?.has(
-      PermissionFlagsBits.ManageGuild,
-    );
-
-    if (!canManage) {
-      await interaction.reply({
-        content: "このコマンドを実行する権限がありません。",
         flags: MessageFlags.Ephemeral,
       });
       return;

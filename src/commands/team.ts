@@ -1,7 +1,6 @@
 import {
   ChatInputCommandInteraction,
   MessageFlags,
-  PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
 import { getParticipants } from "../match-state.js";
@@ -12,7 +11,6 @@ export const teamCommand = {
   data: new SlashCommandBuilder()
     .setName("team")
     .setDescription("参加者をチーム分けします")
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild.toString())
     .addSubcommand((subcommand) =>
       subcommand.setName("random").setDescription("ランダムにチーム分けします"),
     )
@@ -28,14 +26,6 @@ export const teamCommand = {
     if (!guildId) {
       await interaction.reply({
         content: "このコマンドはサーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
-      return;
-    }
-
-    if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-      await interaction.reply({
-        content: "サーバー管理者のみ実行できます。",
         flags: MessageFlags.Ephemeral,
       });
       return;
