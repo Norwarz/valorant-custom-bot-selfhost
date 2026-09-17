@@ -20,18 +20,16 @@ export function isRegistrationOpen(guildId: string): boolean {
   ensureMatch(guildId);
 
   const match = database
-    .prepare<[string], { status: "open" | "closed" }>(
-      "SELECT status FROM matches WHERE guild_id = ?",
-    )
+    .prepare<
+      [string],
+      { status: "open" | "closed" }
+    >("SELECT status FROM matches WHERE guild_id = ?")
     .get(guildId);
 
   return match?.status === "open";
 }
 
-export function setRegistrationOpen(
-  guildId: string,
-  isOpen: boolean,
-): void {
+export function setRegistrationOpen(guildId: string, isOpen: boolean): void {
   ensureMatch(guildId);
 
   database
@@ -45,10 +43,7 @@ export function setRegistrationOpen(
     .run(isOpen ? "open" : "closed", guildId);
 }
 
-export function joinMatch(
-  guildId: string,
-  participant: Participant,
-): boolean {
+export function joinMatch(guildId: string, participant: Participant): boolean {
   ensureMatch(guildId);
 
   const result = database
@@ -127,9 +122,7 @@ export function getParticipantCount(guildId: string): number {
 
 export function clearMatch(guildId: string): number {
   const result = database
-    .prepare(
-      "DELETE FROM participants WHERE guild_id = ?",
-    )
+    .prepare("DELETE FROM participants WHERE guild_id = ?")
     .run(guildId);
 
   return result.changes;

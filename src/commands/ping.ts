@@ -1,14 +1,11 @@
-import {
-  ChatInputCommandInteraction,
-  SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 export const pingCommand = {
-    data: new SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName("ping")
     .setDescription("Botの応答速度を確認します。"),
 
-    async execute(interaction: ChatInputCommandInteraction) {
-        await interaction.reply("Pong!");
-    }
-}
+  async execute(interaction: ChatInputCommandInteraction) {
+    await interaction.reply("Pong!");
+  },
+};

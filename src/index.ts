@@ -13,24 +13,22 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-const commandMap = new Map(
-    commands.map((cmd) => [cmd.data.name, cmd])
-);
+const commandMap = new Map(commands.map((cmd) => [cmd.data.name, cmd]));
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`${readyClient.user.tag} としてログインしました。`);
 });
 client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) {
-        return;
-    }
-    const command = commandMap.get(interaction.commandName);
+  if (!interaction.isChatInputCommand()) {
+    return;
+  }
+  const command = commandMap.get(interaction.commandName);
 
-    if (!command) {
-        console.error(`コマンド ${interaction.commandName} が見つかりません。`);
-        return;
-    }
-    await command.execute(interaction);
+  if (!command) {
+    console.error(`コマンド ${interaction.commandName} が見つかりません。`);
+    return;
+  }
+  await command.execute(interaction);
 });
 
 client.login(token);

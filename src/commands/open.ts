@@ -15,11 +15,11 @@ export const openCommand = {
     const guildId = interaction.guildId;
 
     if (!guildId) {
-        await interaction.reply({
-          content: "このコマンドはDiscordサーバー内でのみ使用できます。",
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
+      await interaction.reply({
+        content: "このコマンドはDiscordサーバー内でのみ使用できます。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
     }
     const canManage = interaction.memberPermissions?.has(
       PermissionFlagsBits.ManageGuild,

@@ -8,11 +8,11 @@ import { openCommand } from "./open.js";
 import { closeCommand } from "./close.js";
 
 export const commands = [
-    joinCommand, 
-    pingCommand, 
-    participantsCommand, 
-    leaveCommand, 
-    resetCommand, 
-    openCommand,
-    closeCommand
+  joinCommand,
+  pingCommand,
+  participantsCommand,
+  leaveCommand,
+  resetCommand,
+  openCommand,
+  closeCommand,
 ];
