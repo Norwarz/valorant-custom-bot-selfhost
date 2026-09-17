@@ -7,6 +7,7 @@ import { resetCommand } from "./reset.js";
 import { openCommand } from "./open.js";
 import { closeCommand } from "./close.js";
 import { teamCommand } from "./team.js";
+import { mapCommand } from "./map.js";
 
 export const commands = [
   joinCommand,
@@ -17,4 +18,5 @@ export const commands = [
   openCommand,
   closeCommand,
   teamCommand,
+  mapCommand,
 ];
