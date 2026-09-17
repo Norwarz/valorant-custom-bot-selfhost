@@ -1,10 +1,12 @@
 import {
   ChatInputCommandInteraction,
+  EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 import { getRankName, rankChoices, type RankValue } from "../rank.js";
 import { setParticipantRank } from "../match-state.js";
+import { getRankDisplay } from "../rank.js";
 
 export const rankCommand = {
   data: new SlashCommandBuilder()
@@ -45,9 +47,8 @@ export const rankCommand = {
       });
       return;
     }
-
     await interaction.reply(
-      `ランクを **${getRankName(rank)}** に登録しました。`,
+      `ランクを **${getRankDisplay(rank)}** に登録しました。`,
     );
   },
 };

@@ -8,6 +8,7 @@ import {
   getParticipants,
   isRegistrationOpen,
 } from "../match-state.js";
+import { getRankDisplay } from "../rank.js";
 
 export const participantsCommand = {
   data: new SlashCommandBuilder()
@@ -33,12 +34,19 @@ export const participantsCommand = {
       return;
     }
     const participantList = participants
-      .map((p, index) => `${index + 1}. ${p.displayName}`)
+      .map(
+        (participant, index) =>
+          `${index + 1}. ${participant.displayName}（${getRankDisplay(
+            participant.rank,
+          )}）`,
+      )
       .join("\n");
     await interaction.reply(
-      `参加受付: **${status}**\n` +
-        `**参加者一覧（${participants.length}人）**\n` +
-        participantList,
+      [
+        `現在の参加者（${getParticipantCount(guildId)}人）`,
+        "",
+        participantList || "参加者はいません。",
+      ].join("\n"),
     );
   },
 };

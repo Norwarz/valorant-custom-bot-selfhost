@@ -6,6 +6,7 @@ import {
 import { getParticipants } from "../match-state.js";
 import { getRankName } from "../rank.js";
 import { splitByRank, splitIntoTeams, type Teams } from "../team-split.js";
+import { getRankDisplay } from "../rank.js";
 
 export const teamCommand = {
   data: new SlashCommandBuilder()
@@ -41,6 +42,15 @@ export const teamCommand = {
       return;
     }
 
+    if (participants.length > 10) {
+      await interaction.reply({
+        content:
+          "登録者は10人以下である必要があります。参加しない人は/leaveで離脱してください。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const mode = interaction.options.getSubcommand();
     const teams: Teams =
       mode === "rank"
@@ -54,7 +64,8 @@ export const teamCommand = {
     const formatTeam = (name: string, members: Teams["teamA"]) =>
       `**${name}**\n${members
         .map(
-          (member) => `・${member.displayName}（${getRankName(member.rank)}）`,
+          (member) =>
+            `・${member.displayName}（${getRankDisplay(member.rank)}）`,
         )
         .join("\n")}`;
 

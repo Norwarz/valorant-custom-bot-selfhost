@@ -1,5 +1,6 @@
 import {
   ChatInputCommandInteraction,
+  EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
@@ -25,7 +26,22 @@ export const mapCommand = {
     }
 
     const selectedMap = pickRandomMap();
+    const imageFileName = `${selectedMap}.png`;
 
-    await interaction.reply(`🗺️ 今回のステージは **${selectedMap}** です！`);
+    const embed = new EmbedBuilder()
+      .setTitle("今回のステージ")
+      .setDescription(`**${selectedMap}**`)
+      .setColor(0x5865f2)
+      .setImage(`attachment://${imageFileName}`);
+
+    await interaction.reply({
+      embeds: [embed],
+      files: [
+        {
+          attachment: `assets/maps/${imageFileName}`,
+          name: imageFileName,
+        },
+      ],
+    });
   },
 };
