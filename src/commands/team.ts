@@ -5,7 +5,8 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { getParticipants } from "../match-state.js";
-import { splitIntoTeams } from "../team-split.js";
+import { getRankName } from "../rank.js";
+import { splitByRank, splitIntoTeams, type Teams } from "../team-split.js";
 
 export const teamCommand = {
   data: new SlashCommandBuilder()
@@ -13,9 +14,12 @@ export const teamCommand = {
     .setDescription("参加者をチーム分けします")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild.toString())
     .addSubcommand((subcommand) =>
+      subcommand.setName("random").setDescription("ランダムにチーム分けします"),
+    )
+    .addSubcommand((subcommand) =>
       subcommand
-        .setName("random")
-        .setDescription("参加者をランダムに2チームへ分けます"),
+        .setName("rank")
+        .setDescription("ランクが近くなるようにチーム分けします"),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -23,7 +27,7 @@ export const teamCommand = {
 
     if (!guildId) {
       await interaction.reply({
-        content: "このコマンドはDiscordサーバー内でのみ使用できます。",
+        content: "このコマンドはサーバー内でのみ使用できます。",
         flags: MessageFlags.Ephemeral,
       });
       return;
@@ -31,7 +35,7 @@ export const teamCommand = {
 
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
       await interaction.reply({
-        content: "このコマンドはサーバー管理者のみ実行できます。",
+        content: "サーバー管理者のみ実行できます。",
         flags: MessageFlags.Ephemeral,
       });
       return;
@@ -41,27 +45,43 @@ export const teamCommand = {
 
     if (participants.length < 2) {
       await interaction.reply({
-        content: "チーム分けには2人以上の参加者が必要です。",
+        content: "チーム分けには2人以上必要です。",
         flags: MessageFlags.Ephemeral,
       });
       return;
     }
 
-    const { teamA, teamB } = splitIntoTeams(participants);
+    const mode = interaction.options.getSubcommand();
+    const teams: Teams =
+      mode === "rank"
+        ? splitByRank(participants)
+        : splitIntoTeams(participants);
 
-    const formatTeam = (teamName: string, members: typeof teamA) =>
-      `**${teamName}**\n${
-        members.map((member) => `・${member.displayName}`).join("\n") ||
-        "メンバーなし"
-      }`;
+    const hasUnregisteredRank = participants.some(
+      (participant) => participant.rank === null,
+    );
+
+    const formatTeam = (name: string, members: Teams["teamA"]) =>
+      `**${name}**\n${members
+        .map(
+          (member) => `・${member.displayName}（${getRankName(member.rank)}）`,
+        )
+        .join("\n")}`;
+
+    const warning =
+      mode === "rank" && hasUnregisteredRank
+        ? "\n⚠️ ランク未登録の参加者がいるため、バランスが均等にならない可能性があります。\n"
+        : "";
 
     await interaction.reply(
       [
-        "🎮 チーム分け結果",
+        mode === "rank"
+          ? "⚖️ ランクを考慮したチーム分け結果"
+          : "🎮 ランダムチーム分け結果",
+        warning,
+        formatTeam("Team A", teams.teamA),
         "",
-        formatTeam("Team A", teamA),
-        "",
-        formatTeam("Team B", teamB),
+        formatTeam("Team B", teams.teamB),
       ].join("\n"),
     );
   },

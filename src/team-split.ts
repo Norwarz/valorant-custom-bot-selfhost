@@ -1,4 +1,5 @@
 import type { Participant } from "./match-state.js";
+import { getRankScore } from "./rank.js";
 
 export type Teams = {
   teamA: Participant[];
@@ -7,7 +8,7 @@ export type Teams = {
 
 export function splitIntoTeams(participants: Participant[]): Teams {
   const shuffled = [...participants];
-  // Fisher-Yatesシャッフル
+
   for (let i = shuffled.length - 1; i > 0; i--) {
     const randomIndex = Math.floor(Math.random() * (i + 1));
 
@@ -17,7 +18,6 @@ export function splitIntoTeams(participants: Participant[]): Teams {
   const teamA: Participant[] = [];
   const teamB: Participant[] = [];
 
-  // 順番に振り分ける
   shuffled.forEach((participant, index) => {
     if (index % 2 === 0) {
       teamA.push(participant);
@@ -25,6 +25,35 @@ export function splitIntoTeams(participants: Participant[]): Teams {
       teamB.push(participant);
     }
   });
+
+  return { teamA, teamB };
+}
+
+export function splitByRank(participants: Participant[]): Teams {
+  const sorted = [...participants].sort(
+    (a, b) => getRankScore(b.rank ?? "iron1") - getRankScore(a.rank ?? "iron1"),
+  );
+
+  const teamA: Participant[] = [];
+  const teamB: Participant[] = [];
+
+  let teamAScore = 0;
+  let teamBScore = 0;
+
+  for (const participant of sorted) {
+    const score = participant.rank ? getRankScore(participant.rank) : 0;
+
+    if (
+      teamA.length < teamB.length ||
+      (teamA.length === teamB.length && teamAScore <= teamBScore)
+    ) {
+      teamA.push(participant);
+      teamAScore += score;
+    } else {
+      teamB.push(participant);
+      teamBScore += score;
+    }
+  }
 
   return { teamA, teamB };
 }
