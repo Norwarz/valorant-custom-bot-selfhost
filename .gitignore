@@ -4,5 +4,5 @@ dist/
 .env.*
 !.env.example
 data/
-
+test/
 .md/
