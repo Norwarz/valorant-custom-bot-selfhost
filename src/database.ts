@@ -38,5 +38,14 @@ database.exec(`
       ON DELETE CASCADE
   );
 `);
+const participantColumns = database
+  .prepare("PRAGMA table_info(participants)")
+  .all() as Array<{ name: string }>;
 
+if (!participantColumns.some((column) => column.name === "rank")) {
+  database.exec(`
+    ALTER TABLE participants
+    ADD COLUMN rank TEXT
+  `);
+}
 console.log(`SQLite database connected: ${databasePath}`);

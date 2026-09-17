@@ -1,8 +1,10 @@
 import { database } from "./database.js";
+import type { RankValue } from "./rank.js";
 
 export type Participant = {
   id: string;
   displayName: string;
+  rank: RankValue | null;
 };
 
 function ensureMatch(guildId: string): void {
@@ -50,8 +52,8 @@ export function joinMatch(guildId: string, participant: Participant): boolean {
     .prepare(
       `
         INSERT OR IGNORE INTO participants
-          (guild_id, user_id, display_name)
-        VALUES (?, ?, ?)
+          (guild_id, user_id, display_name, rank)
+        VALUES (?, ?, ?, NULL)      
       `,
     )
     .run(guildId, participant.id, participant.displayName);
@@ -64,14 +66,15 @@ export function leaveMatch(
   userId: string,
 ): Participant | null {
   const participant = database
-    .prepare<[string, string], { id: string; displayName: string }>(
+    .prepare<[string, string], Participant>(
       `
-        SELECT
-          user_id AS id,
-          display_name AS displayName
-        FROM participants
-        WHERE guild_id = ? AND user_id = ?
-      `,
+      SELECT
+        user_id AS id,
+        display_name AS displayName,
+        rank
+      FROM participants
+      WHERE guild_id = ? AND user_id = ?
+    `,
     )
     .get(guildId, userId);
 
@@ -97,7 +100,8 @@ export function getParticipants(guildId: string): Participant[] {
       `
         SELECT
           user_id AS id,
-          display_name AS displayName
+          display_name AS displayName,
+          rank
         FROM participants
         WHERE guild_id = ?
         ORDER BY joined_at ASC
@@ -126,4 +130,22 @@ export function clearMatch(guildId: string): number {
     .run(guildId);
 
   return result.changes;
+}
+
+export function setParticipantRank(
+  guildId: string,
+  userId: string,
+  rank: RankValue,
+): boolean {
+  const result = database
+    .prepare(
+      `
+        UPDATE participants
+        SET rank = ?
+        WHERE guild_id = ? AND user_id = ?
+      `,
+    )
+    .run(rank, guildId, userId);
+
+  return result.changes > 0;
 }

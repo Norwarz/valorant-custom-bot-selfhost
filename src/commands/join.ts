@@ -40,7 +40,11 @@ export const joinCommand = {
           interaction.user.globalName ??
           interaction.user.username);
 
-    const joined = joinMatch(guildId, { id: interaction.user.id, displayName });
+    const joined = joinMatch(guildId, {
+      id: interaction.user.id,
+      displayName,
+      rank: null,
+    });
 
     if (!joined) {
       await interaction.reply({
