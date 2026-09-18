@@ -1,10 +1,9 @@
 import {
   ChatInputCommandInteraction,
-  EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import { getRankName, rankChoices, type RankValue } from "../rank.js";
+import { rankChoices, type RankValue } from "../rank.js";
 import { setParticipantRank } from "../match-state.js";
 import { getRankDisplay } from "../rank.js";
 import { replyError } from "../ui.js";
@@ -45,8 +44,9 @@ export const rankCommand = {
       await replyError(interaction, "先に`/join`で参加登録してください。");
       return;
     }
-    await interaction.reply(
-      `ランクを **${getRankDisplay(rank)}** に登録しました。`,
-    );
+    await interaction.reply({
+      content: `ランクを **${getRankDisplay(rank)}** に登録しました。`,
+      flags: MessageFlags.Ephemeral,
+    });
   },
 };
