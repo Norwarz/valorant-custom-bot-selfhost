@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 import { commands } from "./commands/index.js";
 import "./database.js";
-import { joinMatch, leaveMatch } from "./match-state.js";
+import { clearMatch, joinMatch, leaveMatch } from "./match-state.js";
 import {
   createParticipantButtons,
   createParticipantsEmbed,
@@ -118,9 +118,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
         rank: null,
       });
 
-      await replyError(interaction, joined
+      await replyError(
+        interaction,
+        joined
           ? `${displayName}さんが参加しました。`
-          : "すでに参加登録されています。");
+          : "すでに参加登録されています。",
+      );
       await interaction.message.edit({
         embeds: [createParticipantsEmbed(guildId)],
         components: [createParticipantButtons()],
@@ -132,9 +135,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.customId === "match:leave") {
       const participant = leaveMatch(guildId, interaction.user.id);
 
-      await replyError(interaction, participant
+      await replyError(
+        interaction,
+        participant
           ? `${participant.displayName}さんの参加を取り消しました。`
-          : "参加登録されていません。");
+          : "参加登録されていません。",
+      );
       await interaction.message.edit({
         embeds: [createParticipantsEmbed(guildId)],
         components: [createParticipantButtons()],
@@ -201,6 +207,49 @@ client.on(Events.InteractionCreate, async (interaction) => {
         embeds: [embed],
         components: [createTeamButtons(mode)],
       });
+
+      return;
+    }
+
+    if (
+      interaction.customId.startsWith("reset:confirm:") ||
+      interaction.customId.startsWith("reset:cancel:")
+    ) {
+      const [command, action, userId] = interaction.customId.split(":");
+
+      if (command !== "reset") {
+        return;
+      }
+
+      if (interaction.user.id !== userId) {
+        await replyError(
+          interaction,
+          "この確認ボタンを操作できるのは、リセットを実行したユーザーだけです。",
+        );
+        return;
+      }
+
+      if (action === "cancel") {
+        await interaction.update({
+          content: "リセットをキャンセルしました。",
+          components: [],
+        });
+        return;
+      }
+
+      if (action === "confirm") {
+        if (!interaction.guildId) {
+          await replyError(interaction, "サーバー内でのみ使用できます。");
+          return;
+        }
+
+        const clearedCount = clearMatch(interaction.guildId);
+
+        await interaction.update({
+          content: `参加者を${clearedCount}人リセットしました。`,
+          components: [],
+        });
+      }
 
       return;
     }
