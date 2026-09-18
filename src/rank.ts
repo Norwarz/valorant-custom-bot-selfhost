@@ -178,3 +178,19 @@ export function getRankDisplay(rank: RankValue | null): string {
 
   return `${rankData.emoji} ${rankData.name}`;
 }
+
+export function getRankFromAverageScore(
+  averageScore: number,
+): RankValue | null {
+  if (!Number.isFinite(averageScore) || averageScore <= 0) {
+    return null;
+  }
+
+  // 平均値に最も近いランクへ変換
+  const roundedScore = Math.round(averageScore);
+
+  // Iron 1未満、Radiant超過を防止
+  const clampedScore = Math.min(25, Math.max(1, roundedScore));
+
+  return rankChoices[clampedScore - 1]?.value ?? null;
+}

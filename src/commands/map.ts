@@ -1,10 +1,39 @@
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChatInputCommandInteraction,
   EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 import { pickRandomMap } from "../map-pick.js";
+
+export function createMapButtons() {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId("map:random")
+      .setLabel("再抽選")
+      .setStyle(ButtonStyle.Primary),
+  );
+}
+
+export function createMapEmbed(selectedMap: string) {
+  const imageFileName = `${selectedMap}.png`;
+
+  return {
+    embed: new EmbedBuilder()
+      .setTitle("今回のステージ")
+      .setDescription(`**${selectedMap}**`)
+      .setColor(0x5865f2)
+      .setImage(`attachment://${imageFileName}`),
+
+    file: {
+      attachment: `assets/maps/${imageFileName}`,
+      name: imageFileName,
+    },
+  };
+}
 
 export const mapCommand = {
   data: new SlashCommandBuilder()
@@ -26,22 +55,12 @@ export const mapCommand = {
     }
 
     const selectedMap = pickRandomMap();
-    const imageFileName = `${selectedMap}.png`;
-
-    const embed = new EmbedBuilder()
-      .setTitle("今回のステージ")
-      .setDescription(`**${selectedMap}**`)
-      .setColor(0x5865f2)
-      .setImage(`attachment://${imageFileName}`);
+    const { embed, file } = createMapEmbed(selectedMap);
 
     await interaction.reply({
       embeds: [embed],
-      files: [
-        {
-          attachment: `assets/maps/${imageFileName}`,
-          name: imageFileName,
-        },
-      ],
+      files: [file],
+      components: [createMapButtons()],
     });
   },
 };

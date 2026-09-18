@@ -17,6 +17,8 @@ import {
 } from "./commands/participants.js";
 import { rankChoices, type RankValue } from "./rank.js";
 import { setParticipantRank } from "./match-state.js";
+import { createMapButtons, createMapEmbed } from "./commands/map.js";
+import { pickRandomMap } from "./map-pick.js";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -164,6 +166,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
           new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu),
         ],
         flags: MessageFlags.Ephemeral,
+      });
+
+      return;
+    }
+
+    if (interaction.customId === "map:random") {
+      const selectedMap = pickRandomMap();
+      const { embed, file } = createMapEmbed(selectedMap);
+
+      await interaction.update({
+        embeds: [embed],
+        files: [file],
+        components: [createMapButtons()],
       });
 
       return;
