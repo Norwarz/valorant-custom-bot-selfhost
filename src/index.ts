@@ -22,6 +22,7 @@ import { pickRandomMap } from "./map-pick.js";
 import { createTeamButtons, createTeamEmbed } from "./commands/team.js";
 import { getParticipants } from "./match-state.js";
 import { splitByRank, splitIntoTeams, type Teams } from "./team-split.js";
+import { replyError } from "./ui.js";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -41,10 +42,7 @@ client.once(Events.ClientReady, (readyClient) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isStringSelectMenu()) {
     if (!interaction.guildId) {
-      await interaction.reply({
-        content: "サーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(interaction, "サーバー内でのみ使用できます。");
       return;
     }
 
@@ -59,10 +57,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const isValidRank = rankChoices.some((rank) => rank.value === selectedRank);
 
     if (!isValidRank) {
-      await interaction.reply({
-        content: "無効なランクが選択されました。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(interaction, "無効なランクが選択されました。");
       return;
     }
 
@@ -73,10 +68,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     );
 
     if (!updated) {
-      await interaction.reply({
-        content: "先に参加登録してください。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(interaction, "先に参加登録してください。");
       return;
     }
 
@@ -106,10 +98,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // ボタン処理
   if (interaction.isButton()) {
     if (!interaction.guildId) {
-      await interaction.reply({
-        content: "サーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(interaction, "サーバー内でのみ使用できます。");
       return;
     }
 
@@ -129,12 +118,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         rank: null,
       });
 
-      await interaction.reply({
-        content: joined
+      await replyError(interaction, joined
           ? `${displayName}さんが参加しました。`
-          : "すでに参加登録されています。",
-        flags: MessageFlags.Ephemeral,
-      });
+          : "すでに参加登録されています。");
       await interaction.message.edit({
         embeds: [createParticipantsEmbed(guildId)],
         components: [createParticipantButtons()],
@@ -146,12 +132,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.customId === "match:leave") {
       const participant = leaveMatch(guildId, interaction.user.id);
 
-      await interaction.reply({
-        content: participant
+      await replyError(interaction, participant
           ? `${participant.displayName}さんの参加を取り消しました。`
-          : "参加登録されていません。",
-        flags: MessageFlags.Ephemeral,
-      });
+          : "参加登録されていません。");
       await interaction.message.edit({
         embeds: [createParticipantsEmbed(guildId)],
         components: [createParticipantButtons()],
@@ -188,10 +171,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     if (interaction.customId.startsWith("team:reroll:")) {
       if (!interaction.guildId) {
-        await interaction.reply({
-          content: "サーバー内でのみ使用できます。",
-          flags: MessageFlags.Ephemeral,
-        });
+        await replyError(interaction, "サーバー内でのみ使用できます。");
         return;
       }
 
@@ -204,10 +184,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const participants = getParticipants(interaction.guildId);
 
       if (participants.length < 2) {
-        await interaction.reply({
-          content: "チーム分けには2人以上必要です。",
-          flags: MessageFlags.Ephemeral,
-        });
+        await replyError(interaction, "チーム分けには2人以上必要です。");
         return;
       }
 

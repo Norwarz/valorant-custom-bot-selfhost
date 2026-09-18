@@ -8,6 +8,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { pickRandomMap } from "../map-pick.js";
+import { replyError } from "../ui.js";
 
 export function createMapButtons() {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -47,10 +48,10 @@ export const mapCommand = {
 
   async execute(interaction: ChatInputCommandInteraction) {
     if (!interaction.guildId) {
-      await interaction.reply({
-        content: "このコマンドはDiscordサーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(
+        interaction,
+        "このコマンドはDiscordサーバー内でのみ使用できます。",
+      );
       return;
     }
 

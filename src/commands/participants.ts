@@ -15,6 +15,7 @@ import {
 } from "../match-state.js";
 import { getRankDisplay } from "../rank.js";
 import { rankChoices } from "../rank.js";
+import { replyError } from "../ui.js";
 
 export function createRankSelectMenu(messageId: string) {
   return new StringSelectMenuBuilder()
@@ -108,10 +109,10 @@ export const participantsCommand = {
     const guildId = interaction.guildId;
 
     if (!guildId) {
-      await interaction.reply({
-        content: "このコマンドはDiscordサーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(
+        interaction,
+        "このコマンドはDiscordサーバー内でのみ使用できます。",
+      );
       return;
     }
 

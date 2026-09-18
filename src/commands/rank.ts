@@ -7,6 +7,7 @@ import {
 import { getRankName, rankChoices, type RankValue } from "../rank.js";
 import { setParticipantRank } from "../match-state.js";
 import { getRankDisplay } from "../rank.js";
+import { replyError } from "../ui.js";
 
 export const rankCommand = {
   data: new SlashCommandBuilder()
@@ -29,10 +30,10 @@ export const rankCommand = {
     const guildId = interaction.guildId;
 
     if (!guildId) {
-      await interaction.reply({
-        content: "このコマンドはDiscordサーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(
+        interaction,
+        "このコマンドはDiscordサーバー内でのみ使用できます。",
+      );
       return;
     }
 
@@ -41,10 +42,7 @@ export const rankCommand = {
     const updated = setParticipantRank(guildId, interaction.user.id, rank);
 
     if (!updated) {
-      await interaction.reply({
-        content: "先に`/join`で参加登録してください。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(interaction, "先に`/join`で参加登録してください。");
       return;
     }
     await interaction.reply(

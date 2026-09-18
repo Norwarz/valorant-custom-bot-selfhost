@@ -1,7 +1,6 @@
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
-  MessageFlags,
   SlashCommandBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -14,6 +13,7 @@ import {
   getRankFromAverageScore,
 } from "../rank.js";
 import { splitByRank, splitIntoTeams, type Teams } from "../team-split.js";
+import { replyError } from "../ui.js";
 
 export function createTeamButtons(mode: "random" | "rank") {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -119,39 +119,31 @@ export const teamCommand = {
     const guildId = interaction.guildId;
 
     if (!guildId) {
-      await interaction.reply({
-        content: "このコマンドはサーバー内でのみ使用できます。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(
+        interaction,
+        "このコマンドはサーバー内でのみ使用できます。",
+      );
       return;
     }
-
     const participants = getParticipants(guildId);
 
     if (participants.length < 2) {
-      await interaction.reply({
-        content: "チーム分けには2人以上必要です。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(interaction, "チーム分けには2人以上必要です。");
       return;
     }
 
     if (participants.length > 10) {
-      await interaction.reply({
-        content:
-          "登録者は10人以下である必要があります。参加しない人は/leaveで離脱してください。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(
+        interaction,
+        "登録者は10人以下である必要があります。参加しない人は/leaveで離脱してください。",
+      );
       return;
     }
 
     const subcommand = interaction.options.getSubcommand();
 
     if (subcommand !== "random" && subcommand !== "rank") {
-      await interaction.reply({
-        content: "無効なチーム分け方式です。",
-        flags: MessageFlags.Ephemeral,
-      });
+      await replyError(interaction, "無効なチーム分け方式です。");
       return;
     }
 
