@@ -6,6 +6,7 @@ import {
   EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
+  StringSelectMenuBuilder,
 } from "discord.js";
 import {
   getParticipantCount,
@@ -13,7 +14,19 @@ import {
   isRegistrationOpen,
 } from "../match-state.js";
 import { getRankDisplay } from "../rank.js";
+import { rankChoices } from "../rank.js";
 
+export function createRankSelectMenu(messageId: string) {
+  return new StringSelectMenuBuilder()
+    .setCustomId(`match:rank-select:${messageId}`)
+    .setPlaceholder("ランクを選択してください")
+    .addOptions(
+      rankChoices.map((rank) => ({
+        label: rank.name,
+        value: rank.value,
+      })),
+    );
+}
 export function createParticipantButtons() {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
@@ -25,6 +38,11 @@ export function createParticipantButtons() {
       .setCustomId("match:leave")
       .setLabel("辞退")
       .setStyle(ButtonStyle.Danger),
+
+    new ButtonBuilder()
+      .setCustomId("match:rank")
+      .setLabel("ランク登録")
+      .setStyle(ButtonStyle.Primary),
   );
 }
 

@@ -1,5 +1,11 @@
 import "dotenv/config";
-import { Client, Events, GatewayIntentBits } from "discord.js";
+import {
+  Client,
+  Events,
+  GatewayIntentBits,
+  ActionRowBuilder,
+  StringSelectMenuBuilder,
+} from "discord.js";
 import { commands } from "./commands/index.js";
 import "./database.js";
 import { joinMatch, leaveMatch } from "./match-state.js";
@@ -7,7 +13,10 @@ import { MessageFlags } from "discord.js";
 import {
   createParticipantButtons,
   createParticipantsEmbed,
+  createRankSelectMenu,
 } from "./commands/participants.js";
+import { rankChoices, type RankValue } from "./rank.js";
+import { setParticipantRank } from "./match-state.js";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -25,6 +34,71 @@ client.once(Events.ClientReady, (readyClient) => {
   console.log(`${readyClient.user.tag} としてログインしました。`);
 });
 client.on(Events.InteractionCreate, async (interaction) => {
+  if (interaction.isStringSelectMenu()) {
+    if (!interaction.guildId) {
+      await interaction.reply({
+        content: "サーバー内でのみ使用できます。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    const [prefix, action, panelMessageId] = interaction.customId.split(":");
+
+    if (prefix !== "match" || action !== "rank-select") {
+      return;
+    }
+
+    const selectedRank = interaction.values[0] as RankValue;
+
+    const isValidRank = rankChoices.some((rank) => rank.value === selectedRank);
+
+    if (!isValidRank) {
+      await interaction.reply({
+        content: "無効なランクが選択されました。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    const updated = setParticipantRank(
+      interaction.guildId,
+      interaction.user.id,
+      selectedRank,
+    );
+
+    if (!updated) {
+      await interaction.reply({
+        content: "先に参加登録してください。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    await interaction.update({
+      content: "ランクを登録しました。",
+      components: [],
+    });
+
+    try {
+      const channel = interaction.channel;
+
+      if (channel?.isTextBased() && "messages" in channel) {
+        const panelMessage = await channel.messages.fetch(panelMessageId);
+
+        await panelMessage.edit({
+          embeds: [createParticipantsEmbed(interaction.guildId)],
+          components: [createParticipantButtons()],
+        });
+      }
+    } catch (error) {
+      console.error("参加者Embedの更新に失敗しました:", error);
+    }
+
+    return;
+  }
+
+  // ボタン処理
   if (interaction.isButton()) {
     if (!interaction.guildId) {
       await interaction.reply({
@@ -81,6 +155,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
 
+    if (interaction.customId === "match:rank") {
+      const menu = createRankSelectMenu(interaction.message.id);
+
+      await interaction.reply({
+        content: "登録するランクを選択してください。",
+        components: [
+          new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu),
+        ],
+        flags: MessageFlags.Ephemeral,
+      });
+
+      return;
+    }
+
     return;
   }
 
@@ -88,6 +176,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return;
   }
 
+  // コマンド処理
   const command = commandMap.get(interaction.commandName);
 
   if (!command) {
