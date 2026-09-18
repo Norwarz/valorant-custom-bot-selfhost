@@ -5,11 +5,11 @@ import {
   GatewayIntentBits,
   ActionRowBuilder,
   StringSelectMenuBuilder,
+  MessageFlags,
 } from "discord.js";
 import { commands } from "./commands/index.js";
 import "./database.js";
 import { joinMatch, leaveMatch } from "./match-state.js";
-import { MessageFlags } from "discord.js";
 import {
   createParticipantButtons,
   createParticipantsEmbed,
@@ -19,6 +19,9 @@ import { rankChoices, type RankValue } from "./rank.js";
 import { setParticipantRank } from "./match-state.js";
 import { createMapButtons, createMapEmbed } from "./commands/map.js";
 import { pickRandomMap } from "./map-pick.js";
+import { createTeamButtons, createTeamEmbed } from "./commands/team.js";
+import { getParticipants } from "./match-state.js";
+import { splitByRank, splitIntoTeams, type Teams } from "./team-split.js";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -183,7 +186,47 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       return;
     }
+    if (interaction.customId.startsWith("team:reroll:")) {
+      if (!interaction.guildId) {
+        await interaction.reply({
+          content: "サーバー内でのみ使用できます。",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
 
+      const mode = interaction.customId.split(":")[2];
+
+      if (mode !== "random" && mode !== "rank") {
+        return;
+      }
+
+      const participants = getParticipants(interaction.guildId);
+
+      if (participants.length < 2) {
+        await interaction.reply({
+          content: "チーム分けには2人以上必要です。",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+
+      const teams: Teams =
+        mode === "rank"
+          ? splitByRank(participants)
+          : splitIntoTeams(participants);
+
+      // 既存のteam.tsにあるEmbed生成処理を、
+      // createTeamEmbed(teams, mode, participants)のような関数に切り出して利用します。
+      const embed = createTeamEmbed(teams, mode, participants);
+
+      await interaction.update({
+        embeds: [embed],
+        components: [createTeamButtons(mode)],
+      });
+
+      return;
+    }
     return;
   }
 

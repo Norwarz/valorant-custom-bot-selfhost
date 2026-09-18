@@ -3,14 +3,57 @@ import {
   EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } from "discord.js";
-import { getParticipants } from "../match-state.js";
+import { getParticipants, type Participant } from "../match-state.js";
 import {
   getRankDisplay,
   getRankScore,
   getRankFromAverageScore,
 } from "../rank.js";
 import { splitByRank, splitIntoTeams, type Teams } from "../team-split.js";
+
+export function createTeamButtons(mode: "random" | "rank") {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`team:reroll:${mode}`)
+      .setLabel("もう一度チーム分け")
+      .setStyle(ButtonStyle.Primary),
+  );
+}
+
+export function createTeamEmbed(
+  teams: Teams,
+  mode: "random" | "rank",
+  participants: Participant[],
+): EmbedBuilder {
+  const embed = new EmbedBuilder()
+    .setTitle(
+      mode === "rank"
+        ? "⚖️ ランクを考慮したチーム分け結果"
+        : "🎮 ランダムチーム分け結果",
+    )
+    .setColor(mode === "rank" ? 0x5865f2 : 0xfee75c)
+    .addFields(
+      {
+        name: "Team A",
+        value:
+          `${formatTeamMembers(teams.teamA)}\n\n` +
+          `平均ランク: ${getTeamAverageRank(teams.teamA)}`,
+        inline: true,
+      },
+      {
+        name: "Team B",
+        value:
+          `${formatTeamMembers(teams.teamB)}\n\n` +
+          `平均ランク: ${getTeamAverageRank(teams.teamB)}`,
+        inline: true,
+      },
+    );
+  return embed;
+}
 
 function getTeamScore(members: Teams["teamA"]): number {
   return members.reduce(
@@ -89,8 +132,17 @@ export const teamCommand = {
       return;
     }
 
-    const mode = interaction.options.getSubcommand();
+    const subcommand = interaction.options.getSubcommand();
 
+    if (subcommand !== "random" && subcommand !== "rank") {
+      await interaction.reply({
+        content: "無効なチーム分け方式です。",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    const mode: "random" | "rank" = subcommand;
     const teams: Teams =
       mode === "rank"
         ? splitByRank(participants)
@@ -100,29 +152,7 @@ export const teamCommand = {
       (participant) => participant.rank === null,
     );
 
-    const embed = new EmbedBuilder()
-      .setTitle(
-        mode === "rank"
-          ? "⚖️ ランクを考慮したチーム分け結果"
-          : "🎮 ランダムチーム分け結果",
-      )
-      .setColor(mode === "rank" ? 0x5865f2 : 0xfee75c)
-      .addFields(
-        {
-          name: "Team A",
-          value:
-            `${formatTeamMembers(teams.teamA)}\n\n` +
-            `平均ランク: ${getTeamAverageRank(teams.teamA)}`,
-          inline: true,
-        },
-        {
-          name: "Team B",
-          value:
-            `${formatTeamMembers(teams.teamB)}\n\n` +
-            `平均ランク: ${getTeamAverageRank(teams.teamB)}`,
-          inline: true,
-        },
-      );
+    const embed = createTeamEmbed(teams, mode, participants);
 
     if (mode === "rank" && hasUnregisteredRank) {
       embed.addFields({
@@ -134,6 +164,7 @@ export const teamCommand = {
 
     await interaction.reply({
       embeds: [embed],
+      components: [createTeamButtons(mode)],
     });
   },
 };
