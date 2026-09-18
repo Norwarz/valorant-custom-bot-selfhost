@@ -52,6 +52,19 @@ export function createTeamEmbed(
         inline: true,
       },
     );
+
+  const hasUnregisteredRank = participants.some(
+    (participant) => participant.rank === null,
+  );
+
+  if (mode === "rank" && hasUnregisteredRank) {
+    embed.addFields({
+      name: "注意",
+      value:
+        "ランク未登録の参加者がいるため、バランスが均等にならない可能性があります。",
+    });
+  }
+
   return embed;
 }
 
@@ -148,19 +161,7 @@ export const teamCommand = {
         ? splitByRank(participants)
         : splitIntoTeams(participants);
 
-    const hasUnregisteredRank = participants.some(
-      (participant) => participant.rank === null,
-    );
-
     const embed = createTeamEmbed(teams, mode, participants);
-
-    if (mode === "rank" && hasUnregisteredRank) {
-      embed.addFields({
-        name: "注意",
-        value:
-          "ランク未登録の参加者がいるため、バランスが均等にならない可能性があります。",
-      });
-    }
 
     await interaction.reply({
       embeds: [embed],
