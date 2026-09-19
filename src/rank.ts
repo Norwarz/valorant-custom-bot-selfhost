@@ -153,6 +153,10 @@ export const rankChoices = [
 
 export type RankValue = (typeof rankChoices)[number]["value"];
 
+export function isRankValue(value: string): value is RankValue {
+  return rankChoices.some((rank) => rank.value === value);
+}
+
 export function getRankScore(rank: RankValue): number {
   return rankChoices.find((item) => item.value === rank)?.score ?? 0;
 }

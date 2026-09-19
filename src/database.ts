@@ -39,8 +39,8 @@ database.exec(`
   );
 `);
 const participantColumns = database
-  .prepare("PRAGMA table_info(participants)")
-  .all() as Array<{ name: string }>;
+  .prepare<[], { name: string }>("PRAGMA table_info(participants)")
+  .all();
 
 if (!participantColumns.some((column) => column.name === "rank")) {
   database.exec(`

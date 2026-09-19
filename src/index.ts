@@ -20,7 +20,7 @@ import {
   createParticipantsEmbed,
   createRankSelectMenu,
 } from "./commands/participants.js";
-import { rankChoices, type RankValue } from "./rank.js";
+import { isRankValue } from "./rank.js";
 import { createMapButtons, createMapEmbed } from "./commands/map.js";
 import { pickRandomMap } from "./map-pick.js";
 import { createTeamButtons, createTeamEmbed } from "./commands/team.js";
@@ -56,11 +56,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
 
-    const selectedRank = interaction.values[0] as RankValue;
+    const selectedRank = interaction.values[0];
 
-    const isValidRank = rankChoices.some((rank) => rank.value === selectedRank);
-
-    if (!isValidRank) {
+    if (!isRankValue(selectedRank)) {
       await replyError(interaction, "無効なランクが選択されました。");
       return;
     }

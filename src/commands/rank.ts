@@ -3,7 +3,7 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import { rankChoices, type RankValue } from "../rank.js";
+import { isRankValue, rankChoices } from "../rank.js";
 import { registerParticipantRank } from "../services/match-service.js";
 import { getRankDisplay } from "../rank.js";
 import { replyError } from "../ui.js";
@@ -36,7 +36,12 @@ export const rankCommand = {
       return;
     }
 
-    const rank = interaction.options.getString("value", true) as RankValue;
+    const rank = interaction.options.getString("value", true);
+
+    if (!isRankValue(rank)) {
+      await replyError(interaction, "無効なランクが選択されました。");
+      return;
+    }
 
     const updated = registerParticipantRank(guildId, interaction.user.id, rank);
 

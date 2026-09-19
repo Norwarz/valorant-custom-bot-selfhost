@@ -76,14 +76,19 @@ function getTeamScore(members: Teams["teamA"]): number {
 }
 
 function getTeamAverageRank(members: Teams["teamA"]): string {
-  const rankedMembers = members.filter((member) => member.rank !== null);
+  const rankedMembers = members.filter(
+    (
+      member,
+    ): member is Participant & { rank: NonNullable<Participant["rank"]> } =>
+      member.rank !== null,
+  );
 
   if (rankedMembers.length === 0) {
     return "⚪ ランク未登録";
   }
 
   const totalScore = rankedMembers.reduce(
-    (total, member) => total + getRankScore(member.rank!),
+    (total, member) => total + getRankScore(member.rank),
     0,
   );
 
