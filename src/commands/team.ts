@@ -14,6 +14,7 @@ import {
 } from "../rank.js";
 import { splitByRank, splitIntoTeams, type Teams } from "../team-split.js";
 import { replyError } from "../ui.js";
+import { setLatestTeams } from "../team-state.js";
 
 export function createTeamButtons(mode: "random" | "rank") {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -157,6 +158,8 @@ export const teamCommand = {
       mode === "rank"
         ? splitByRank(participants)
         : splitIntoTeams(participants);
+
+    setLatestTeams(guildId, teams);
 
     const embed = createTeamEmbed(teams, mode, participants);
 

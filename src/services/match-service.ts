@@ -7,19 +7,24 @@ import {
   type Participant,
 } from "../match-state.js";
 import type { RankValue } from "../rank.js";
+import { clearLatestTeams } from "../team-state.js";
 
 export function joinParticipant(
   guildId: string,
   participant: Participant,
 ): boolean {
-  return saveParticipant(guildId, participant);
+  const saved = saveParticipant(guildId, participant);
+  if (saved) clearLatestTeams(guildId);
+  return saved;
 }
 
 export function leaveParticipant(
   guildId: string,
   userId: string,
 ): Participant | null {
-  return deleteParticipant(guildId, userId);
+  const participant = deleteParticipant(guildId, userId);
+  if (participant) clearLatestTeams(guildId);
+  return participant;
 }
 
 export function changeRegistration(guildId: string, isOpen: boolean): void {
@@ -35,5 +40,7 @@ export function registerParticipantRank(
 }
 
 export function resetParticipants(guildId: string): number {
-  return clearMatch(guildId);
+  const clearedCount = clearMatch(guildId);
+  clearLatestTeams(guildId);
+  return clearedCount;
 }

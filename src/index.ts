@@ -27,6 +27,7 @@ import { createTeamButtons, createTeamEmbed } from "./commands/team.js";
 import { getParticipants } from "./match-state.js";
 import { splitByRank, splitIntoTeams, type Teams } from "./team-split.js";
 import { replyError } from "./ui.js";
+import { setLatestTeams } from "./team-state.js";
 
 const token = process.env.DISCORD_TOKEN;
 
@@ -203,6 +204,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       // 既存のteam.tsにあるEmbed生成処理を、
       // createTeamEmbed(teams, mode, participants)のような関数に切り出して利用します。
+      setLatestTeams(interaction.guildId, teams);
+
       const embed = createTeamEmbed(teams, mode, participants);
 
       await interaction.update({
