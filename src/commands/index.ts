@@ -14,6 +14,7 @@ import { teamCommand } from "./team.js";
 import { mapCommand } from "./map.js";
 import { rankCommand } from "./rank.js";
 import { roleCommand } from "./role.js";
+import { helpCommand } from "./help.js";
 
 export type BotCommand = {
   data:
@@ -34,4 +35,5 @@ export const commands: BotCommand[] = [
   mapCommand,
   rankCommand,
   roleCommand,
+  helpCommand,
 ];
