@@ -6,8 +6,7 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import { clearMatch, getParticipantCount } from "../match-state.js";
-
+import { getParticipantCount } from "../match-state.js";
 export const resetCommand = {
   data: new SlashCommandBuilder()
     .setName("reset")

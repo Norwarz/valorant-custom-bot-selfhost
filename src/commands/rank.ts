@@ -4,7 +4,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { rankChoices, type RankValue } from "../rank.js";
-import { setParticipantRank } from "../match-state.js";
+import { registerParticipantRank } from "../services/match-service.js";
 import { getRankDisplay } from "../rank.js";
 import { replyError } from "../ui.js";
 
@@ -38,7 +38,7 @@ export const rankCommand = {
 
     const rank = interaction.options.getString("value", true) as RankValue;
 
-    const updated = setParticipantRank(guildId, interaction.user.id, rank);
+    const updated = registerParticipantRank(guildId, interaction.user.id, rank);
 
     if (!updated) {
       await replyError(interaction, "先に`/join`で参加登録してください。");

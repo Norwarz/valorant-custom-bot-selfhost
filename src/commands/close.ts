@@ -3,7 +3,8 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import { isRegistrationOpen, setRegistrationOpen } from "../match-state.js";
+import { isRegistrationOpen } from "../match-state.js";
+import { changeRegistration } from "../services/match-service.js";
 
 export const closeCommand = {
   data: new SlashCommandBuilder()
@@ -29,7 +30,7 @@ export const closeCommand = {
       return;
     }
 
-    setRegistrationOpen(guildId, false);
+    changeRegistration(guildId, false);
     await interaction.reply("参加受付を締め切りました。");
   },
 };

@@ -3,7 +3,8 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import { getParticipantCount, leaveMatch } from "../match-state.js";
+import { getParticipantCount } from "../match-state.js";
+import { leaveParticipant } from "../services/match-service.js";
 
 export const leaveCommand = {
   data: new SlashCommandBuilder()
@@ -20,7 +21,7 @@ export const leaveCommand = {
       });
       return;
     }
-    const participant = leaveMatch(guildId, interaction.user.id);
+    const participant = leaveParticipant(guildId, interaction.user.id);
     if (!participant) {
       await interaction.reply({
         content: "参加登録していません",

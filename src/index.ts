@@ -9,14 +9,18 @@ import {
 } from "discord.js";
 import { commands } from "./commands/index.js";
 import "./database.js";
-import { clearMatch, joinMatch, leaveMatch } from "./match-state.js";
+import {
+  joinParticipant,
+  leaveParticipant,
+  registerParticipantRank,
+  resetParticipants,
+} from "./services/match-service.js";
 import {
   createParticipantButtons,
   createParticipantsEmbed,
   createRankSelectMenu,
 } from "./commands/participants.js";
 import { rankChoices, type RankValue } from "./rank.js";
-import { setParticipantRank } from "./match-state.js";
 import { createMapButtons, createMapEmbed } from "./commands/map.js";
 import { pickRandomMap } from "./map-pick.js";
 import { createTeamButtons, createTeamEmbed } from "./commands/team.js";
@@ -61,7 +65,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
 
-    const updated = setParticipantRank(
+    const updated = registerParticipantRank(
       interaction.guildId,
       interaction.user.id,
       selectedRank,
@@ -112,7 +116,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           ? member.displayName
           : (interaction.user.globalName ?? interaction.user.username);
 
-      const joined = joinMatch(guildId, {
+      const joined = joinParticipant(guildId, {
         id: interaction.user.id,
         displayName,
         rank: null,
@@ -133,7 +137,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     if (interaction.customId === "match:leave") {
-      const participant = leaveMatch(guildId, interaction.user.id);
+      const participant = leaveParticipant(guildId, interaction.user.id);
 
       await replyError(
         interaction,
@@ -243,7 +247,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           return;
         }
 
-        const clearedCount = clearMatch(interaction.guildId);
+        const clearedCount = resetParticipants(interaction.guildId);
 
         await interaction.update({
           content: `参加者を${clearedCount}人リセットしました。`,

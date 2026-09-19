@@ -1,13 +1,10 @@
+import { joinParticipant } from "../services/match-service.js";
 import {
   ChatInputCommandInteraction,
   SlashCommandBuilder,
   MessageFlags,
 } from "discord.js";
-import {
-  getParticipantCount,
-  joinMatch,
-  isRegistrationOpen,
-} from "../match-state.js";
+import { getParticipantCount, isRegistrationOpen } from "../match-state.js";
 
 export const joinCommand = {
   data: new SlashCommandBuilder()
@@ -40,7 +37,7 @@ export const joinCommand = {
           interaction.user.globalName ??
           interaction.user.username);
 
-    const joined = joinMatch(guildId, {
+    const joined = joinParticipant(guildId, {
       id: interaction.user.id,
       displayName,
       rank: null,
