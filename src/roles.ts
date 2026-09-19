@@ -25,33 +25,43 @@ function shuffle<T>(items: readonly T[]): T[] {
 
   for (let index = result.length - 1; index > 0; index -= 1) {
     const randomIndex = Math.floor(Math.random() * (index + 1));
-    [result[index], result[randomIndex]] = [
-      result[randomIndex],
-      result[index],
-    ];
+    [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
   }
 
   return result;
 }
 
-function assignTeamRoles(participants: Participant[]): RoleAssignment[] {
+function assignTeamRoles(
+  participants: Participant[],
+  ensureAllRoles: boolean,
+): RoleAssignment[] {
   const shuffledParticipants = shuffle(participants);
   const shuffledRoles = shuffle(roleChoices.map((role) => role.name));
 
   return shuffledParticipants.map((participant, index) => ({
     participant,
     role:
-      participants.length >= roleChoices.length && index < roleChoices.length
+      ensureAllRoles &&
+      participants.length >= roleChoices.length &&
+      index < roleChoices.length
         ? shuffledRoles[index]
-        : shuffledRoles[index % shuffledRoles.length],
+        : shuffledRoles[Math.floor(Math.random() * shuffledRoles.length)],
   }));
 }
 
-export function assignRandomRoles(teams: Teams): TeamRoles {
+export function assignRoles(teams: Teams, ensureAllRoles: boolean): TeamRoles {
   return {
-    teamA: assignTeamRoles(teams.teamA),
-    teamB: assignTeamRoles(teams.teamB),
+    teamA: assignTeamRoles(teams.teamA, ensureAllRoles),
+    teamB: assignTeamRoles(teams.teamB, ensureAllRoles),
   };
+}
+
+export function assignRandomRoles(teams: Teams): TeamRoles {
+  return assignRoles(teams, true);
+}
+
+export function assignFreeRoles(teams: Teams): TeamRoles {
+  return assignRoles(teams, false);
 }
 
 export function getRoleDisplay(role: Role): string {
