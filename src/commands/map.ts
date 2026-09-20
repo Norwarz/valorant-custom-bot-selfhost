@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 import { pickRandomMap } from "../map-pick.js";
 import { replyError } from "../ui.js";
+import { assetPath } from "../config.js";
 
 export function createMapButtons() {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -30,7 +31,7 @@ export function createMapEmbed(selectedMap: string) {
       .setImage(`attachment://${imageFileName}`),
 
     file: {
-      attachment: `assets/maps/${imageFileName}`,
+      attachment: assetPath("maps", imageFileName),
       name: imageFileName,
     },
   };

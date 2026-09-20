@@ -1,15 +1,11 @@
 import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import { botConfig } from "./config.js";
 
-const currentFilePath = fileURLToPath(import.meta.url);
-const currentDirectory = dirname(currentFilePath);
+mkdirSync(botConfig.dataDirectory, { recursive: true });
 
-const dataDirectory = resolve(currentDirectory, "../data");
-mkdirSync(dataDirectory, { recursive: true });
-
-const databasePath = resolve(dataDirectory, "bot.sqlite");
+const databasePath = join(botConfig.dataDirectory, "bot.sqlite");
 
 export const database = new Database(databasePath);
 

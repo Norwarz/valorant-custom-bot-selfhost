@@ -1,4 +1,3 @@
-import "dotenv/config";
 import {
   Client,
   Events,
@@ -28,12 +27,9 @@ import { getParticipants } from "./match-state.js";
 import { splitByRank, splitIntoTeams, type Teams } from "./team-split.js";
 import { replyError } from "./ui.js";
 import { setLatestTeams } from "./team-state.js";
+import { requireBotToken } from "./config.js";
 
-const token = process.env.DISCORD_TOKEN;
-
-if (!token) {
-  throw new Error("DISCORD_TOKEN が .env に設定されていません。");
-}
+const token = requireBotToken();
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
