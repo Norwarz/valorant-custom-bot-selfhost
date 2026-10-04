@@ -20,6 +20,7 @@ export function createHelpEmbed(): EmbedBuilder {
           "/join — カスタムマッチに参加",
           "/leave — 参加を取り消し",
           "/participants — 参加者一覧を表示",
+          "/sync-reactions message:<リンク> — リアクションから参加者を登録",
           "/reset — 参加者を全員リセット",
         ].join("\n"),
       },
@@ -41,7 +42,7 @@ export function createHelpEmbed(): EmbedBuilder {
         name: "基本的な流れ",
         value: [
           "1. /open で受付を開始",
-          "2. /join または参加者パネルから参加",
+          "2. /join、参加者パネル、または /sync-reactions で参加登録",
           "3. 必要に応じて /rank でランク登録",
           "4. /team random または /team rank を実行",
           "5. /role random または /role free を実行",
